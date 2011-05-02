@@ -17,6 +17,21 @@ object MusicScan extends App {
   if (!rootDir.isDirectory()) {
     badUsage
   }
+
+  def isAudioFile(file : File) : Boolean = {
+    val AudioFilename = "^.*(mp3|m4a|ogg)$(?i)".r
+
+    file.getName() match {
+      case AudioFilename(_) => return true
+      case _ => return false
+    }
+  }
+
+  val extractor = new TagExtractor
+  val scanner = new DirectoryScanner(isAudioFile)
+
+  extractor.start
+  scanner.scan(rootDir, extractor)
 }
 
 // vim: set ts=4 sw=4 et:

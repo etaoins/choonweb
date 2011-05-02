@@ -1,0 +1,27 @@
+package local.choonweb.musicscan
+
+import java.io._
+import scala.actors._
+
+case class FileFound(file : File)
+case class ScanDone()
+
+class DirectoryScanner(filter : (File) => Boolean) {
+  def scan(root : File, consumer : Actor) {
+    def scanDir(dir : File) {
+      for(file <- dir.listFiles()) {
+        if (file.isDirectory) {
+          scanDir(file)
+        }
+        else if (filter(file)) {
+          consumer ! new FileFound(file)
+        }
+      }
+    }
+
+    scanDir(root)
+    consumer ! ScanDone()
+  }
+}
+
+// vim: set ts=4 sw=4 et:
