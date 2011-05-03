@@ -9,7 +9,7 @@ case class ScanDone()
 class DirectoryScanner(filter : (File) => Boolean) {
   def scan(root : File, consumer : Actor) {
     def scanDir(dir : File) {
-      for(file <- dir.listFiles()) {
+      for(file <- dir.listFiles() if !file.isHidden()) {
         if (file.isDirectory) {
           scanDir(file)
         }
