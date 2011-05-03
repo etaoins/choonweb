@@ -1,6 +1,7 @@
 package local.choonweb.musicscan
 
 import java.io._
+import java.util.Properties
 
 object MusicScan extends App {
   def badUsage() {
@@ -15,10 +16,12 @@ object MusicScan extends App {
   val rootDir = new File(args(0))
 
   if (!rootDir.isDirectory()) {
+    // We must be rooted in a directory
     badUsage
   }
 
   def isAudioFile(file : File) : Boolean = {
+    // Look for things with audio-y extensions
     val AudioFilename = "^.*(mp3|m4a|ogg)$(?i)".r
 
     file.getName() match {
@@ -27,9 +30,16 @@ object MusicScan extends App {
     }
   }
 
-  val extractor = new TagExtractor
+  // Load our properties file
+  val props = new Properties();
+  props.load(getClass().getClassLoader().getResourceAsStream("musicscan.properties"))
+  val mongoHost = props.getProperty("mongoHost", "localhost")
+
+  val persister = new MongoPersister(mongoHost)
+  val extractor = new TagExtractor(persister)
   val scanner = new DirectoryScanner(isAudioFile)
 
+  persister.start
   extractor.start
   scanner.scan(rootDir, extractor)
 }

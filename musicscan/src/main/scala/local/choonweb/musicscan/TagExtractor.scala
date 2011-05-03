@@ -1,27 +1,28 @@
 package local.choonweb.musicscan
 
 import scala.actors._
-import scala.concurrent.ops._
 import org.jaudiotagger.audio._
 import org.jaudiotagger.tag._
 
-class TagExtractor extends Actor {
-  def act() {
+case class AudioFileScanned(relativePath : String, audioFile : AudioFile)
+case class TagExtractionDone();
 
-    // Used 
+class TagExtractor(persister : Actor) extends Actor {
+  def act() {
 
     loop {
       react {
-        case FileFound(file) =>
+        case FileFound(relativePath, file) =>
           try {
             val audioFile = AudioFileIO.read(file)
-            val tag = audioFile.getTag()
+            persister ! AudioFileScanned(relativePath, audioFile)
           }
           catch {
             case e:exceptions.InvalidAudioFrameException =>
           }
 
         case ScanDone() =>
+          persister ! TagExtractionDone();
           exit()
       }
     }

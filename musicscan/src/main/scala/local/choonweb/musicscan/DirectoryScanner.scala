@@ -3,7 +3,7 @@ package local.choonweb.musicscan
 import java.io._
 import scala.actors._
 
-case class FileFound(file : File)
+case class FileFound(relativePath : String, file : File)
 case class ScanDone()
 
 class DirectoryScanner(filter : (File) => Boolean) {
@@ -14,7 +14,8 @@ class DirectoryScanner(filter : (File) => Boolean) {
           scanDir(file)
         }
         else if (filter(file)) {
-          consumer ! new FileFound(file)
+          var relativePath = root.toURI().relativize(file.toURI()).getPath()
+          consumer ! FileFound(relativePath, file)
         }
       }
     }
