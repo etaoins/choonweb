@@ -8,10 +8,15 @@ import java.util.Date
 class MongoPersister(mongoHost : String) extends Actor {
   val mongoConn = MongoConnection(mongoHost)
   val mongoDB = mongoConn("choonweb")
+  val trackColl = mongoDB("tracks")
+
+  // Create our indexes
+  trackColl.ensureIndex(MongoDBObject("path" -> 1), null, true)
+  trackColl.ensureIndex(MongoDBObject("tag.artist" -> 1))
+  trackColl.ensureIndex(MongoDBObject("tag.title" -> 1))
+  trackColl.ensureIndex(MongoDBObject("keywords" -> 1))
 
   def act() {
-    val trackColl = mongoDB("tracks")
-
     loop {
       react {
         case AudioFileScanned(relativePath, audioFile) =>
@@ -38,6 +43,25 @@ class MongoPersister(mongoHost : String) extends Actor {
             return fileBuilder.result
           }
 
+          def keywords(tag : org.jaudiotagger.tag.Tag) : Set[String] = {
+            def findKeywords(key : FieldKey) : Set[String] = {
+              try {
+                return """[\w']+""".r.findAllIn(tag.getFirst(key)).toSet
+              }
+              catch {
+                case e : java.lang.NullPointerException =>
+              }
+
+              return Set()
+            }
+
+            var keywords = findKeywords(FieldKey.ARTIST)
+            keywords ++= findKeywords(FieldKey.ALBUM)
+            keywords ++= findKeywords(FieldKey.TITLE)
+
+            return keywords
+          }
+
           try {
             // This is what we're upserting based on
             val indexBuilder = MongoDBObject.newBuilder
@@ -50,6 +74,7 @@ class MongoPersister(mongoHost : String) extends Actor {
             trackBuilder += "file" -> fileInformation(audioFile.getFile())
             trackBuilder += "duration" -> audioFile.getAudioHeader().getTrackLength()
             trackBuilder += "seen" -> new Date()
+            trackBuilder += "keywords" -> keywords(audioFile.getTag)
             trackBuilder ++= index
             val track = trackBuilder.result
 
