@@ -28,7 +28,7 @@ class MongoPersister(mongoHost : String) extends Actor {
               tagBuilder += "album" -> tag.getFirst(FieldKey.ALBUM) 
             }
             catch {
-              case e : java.lang.NullPointerException => // Epic don't care
+              case e : NullPointerException => // Epic don't care
             }
 
             tagBuilder += "title" -> tag.getFirst(FieldKey.TITLE) 
@@ -49,7 +49,7 @@ class MongoPersister(mongoHost : String) extends Actor {
                 return """[\w']+""".r.findAllIn(tag.getFirst(key)).toSet
               }
               catch {
-                case e : java.lang.NullPointerException =>
+                case e : NullPointerException =>
               }
 
               return Set()
@@ -81,7 +81,7 @@ class MongoPersister(mongoHost : String) extends Actor {
             trackColl.update(index, track, upsert = true, multi = false)
           }
           catch {
-            case e : java.lang.NullPointerException => // Don't save the track
+            case e : NullPointerException => // Don't save the track
           }
         case TagExtractionDone() =>
           exit();
