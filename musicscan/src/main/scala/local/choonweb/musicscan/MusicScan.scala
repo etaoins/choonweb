@@ -4,6 +4,9 @@ import java.io._
 import java.util.Properties
 import com.mongodb.casbah.Imports._
 
+case class FileFound(relativePath : String, file : File)
+case class ScanDone()
+
 object MusicScan extends App {
   def badUsage() {
     println("Usage: musicscan [directory]")
@@ -31,25 +34,21 @@ object MusicScan extends App {
   val mongoDB = mongoConn("choonweb")
   val trackColl = mongoDB("tracks")
 
-  def isAudioFile(file : File) : Boolean = {
-    // Look for things with audio-y extensions
-    val AudioFilename = "^.*(mp3|m4a|ogg)$(?i)".r
+  // Build our actors
+  val persister = new MongoPersister(trackColl).start
+  val extractor = new TagExtractor(persister).start
+  val filter = new MongoUnchangedFilter(trackColl, extractor).start
 
-    file.getName() match {
-      case AudioFilename(_) => return true
-      case _ => return false
-    }
+  // Look for audio files
+  val audioFilenameRx = "^.*(mp3|m4a|ogg)$(?i)".r
+  val walker = new DirectoryWalker(rootDir)
+  
+  for(file <- walker if audioFilenameRx.findFirstIn(file.getName).isDefined) {
+      var relativePath = rootDir.toURI().relativize(file.toURI()).getPath()
+      filter ! FileFound(relativePath, file)
   }
 
-  val persister = new MongoPersister(trackColl)
-  val extractor = new TagExtractor(persister)
-  val filter = new MongoUnchangedFilter(trackColl, extractor)
-  val scanner = new DirectoryScanner(isAudioFile)
-
-  persister.start
-  extractor.start
-  filter.start
-  scanner.scan(rootDir, filter)
+  filter ! ScanDone()
 }
 
 // vim: set ts=4 sw=4 et:
