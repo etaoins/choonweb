@@ -2,6 +2,7 @@ package local.choonweb.musicscan
 
 import java.io._
 import java.util.Properties
+import com.mongodb.casbah.Imports._
 
 object MusicScan extends App {
   def badUsage() {
@@ -20,6 +21,16 @@ object MusicScan extends App {
     badUsage
   }
 
+  // Load our properties file
+  val props = new Properties();
+  props.load(getClass().getClassLoader().getResourceAsStream("musicscan.properties"))
+  val mongoHost = props.getProperty("mongoHost", "localhost")
+
+  // Connect to MongoDB
+  val mongoConn = MongoConnection(mongoHost)
+  val mongoDB = mongoConn("choonweb")
+  val trackColl = mongoDB("tracks")
+
   def isAudioFile(file : File) : Boolean = {
     // Look for things with audio-y extensions
     val AudioFilename = "^.*(mp3|m4a|ogg)$(?i)".r
@@ -30,18 +41,15 @@ object MusicScan extends App {
     }
   }
 
-  // Load our properties file
-  val props = new Properties();
-  props.load(getClass().getClassLoader().getResourceAsStream("musicscan.properties"))
-  val mongoHost = props.getProperty("mongoHost", "localhost")
-
-  val persister = new MongoPersister(mongoHost)
+  val persister = new MongoPersister(trackColl)
   val extractor = new TagExtractor(persister)
+  val filter = new MongoUnchangedFilter(trackColl, extractor)
   val scanner = new DirectoryScanner(isAudioFile)
 
   persister.start
   extractor.start
-  scanner.scan(rootDir, extractor)
+  filter.start
+  scanner.scan(rootDir, filter)
 }
 
 // vim: set ts=4 sw=4 et:

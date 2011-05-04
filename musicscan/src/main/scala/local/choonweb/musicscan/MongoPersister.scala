@@ -5,11 +5,7 @@ import org.jaudiotagger.tag._
 import com.mongodb.casbah.Imports._
 import java.util.Date
 
-class MongoPersister(mongoHost : String) extends Actor {
-  val mongoConn = MongoConnection(mongoHost)
-  val mongoDB = mongoConn("choonweb")
-  val trackColl = mongoDB("tracks")
-
+class MongoPersister(trackColl : MongoCollection) extends Actor {
   // Create our indexes
   trackColl.ensureIndex(MongoDBObject("path" -> 1), null, true)
   trackColl.ensureIndex(MongoDBObject("tag.artist" -> 1))
@@ -39,7 +35,7 @@ class MongoPersister(mongoHost : String) extends Actor {
           def fileInformation(file : java.io.File) : MongoDBObject = {
             val fileBuilder = MongoDBObject.newBuilder
             fileBuilder += "size" -> file.length
-            fileBuilder += "lastModifed" -> new Date(file.lastModified)
+            fileBuilder += "lastModified" -> new Date(file.lastModified)
             return fileBuilder.result
           }
 
