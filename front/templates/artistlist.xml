@@ -1,0 +1,8 @@
+$def with (artists)
+
+<artists>
+	$for artist in artists:
+		<artist>
+			$artist
+		</artist>
+</artists>
