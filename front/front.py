@@ -1,4 +1,5 @@
 import web
+import model
 
 urls = (
 		r'/artists/', 'controllers.artists.List',
@@ -8,7 +9,16 @@ urls = (
 		r'/tracks/', 'controllers.tracks.List',
 	)
 
+def check_modified(handler):
+	web.http.expires(300)
+	web.http.modified(etag=model.datastore_state_tag())
+	return handler()
+
 app = web.application(urls, globals())
+
+# As we're only a read only reflection of Mongo every can be checked against
+# our MongoDB state
+app.add_processor(check_modified)
 
 if __name__ == '__main__':
 	app.run()
