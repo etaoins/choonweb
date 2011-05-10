@@ -42,7 +42,12 @@ class MongoPersister(trackColl : MongoCollection) extends Actor {
           def keywords(tag : org.jaudiotagger.tag.Tag) : Set[String] = {
             def findKeywords(key : FieldKey) : Set[String] = {
               try {
-                return """[\w']+""".r.findAllIn(tag.getFirst(key)).toSet
+                val words = """[\w']+""".r.findAllIn(tag.getFirst(key))
+
+                // Convert to lowercase as Mongo is case sensitive
+                val lowercaseWords = for (word <- words) yield word.toLowerCase
+                // Remove dupes
+                return lowercaseWords.toSet
               }
               catch {
                 case e : NullPointerException =>
