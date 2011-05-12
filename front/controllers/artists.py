@@ -13,7 +13,8 @@ class List:
 	@mimerender(
 			default = 'json',
 			json = render_json,
-			xml = templates.artistlist
+			xml = templates.artistlist,
+			txt = lambda artists: "\n".join(artists)
 	)
 	def GET(self):
 		return {'artists': model.all_artists()}
@@ -22,7 +23,9 @@ class Albums:
 	@mimerender(
 			default = 'json',
 			json = render_json,
-			xml = templates.albumlist)
+			xml = templates.albumlist,
+			txt = lambda albums: "\n".join(albums)
+	)
 	def GET(self, artist):
 		return {'albums': model.artist_albums(artist)}
 
