@@ -37,6 +37,15 @@ def all_tracks():
 	"""Return all tracks"""
 	return [Track(mongo_track) for mongo_track in coll.find()]
 
+def all_tracks_matching(keywords):
+	"""Find all tracks matching a list of keywords"""
+	matching = []
+
+	for keyword in keywords:
+		matching.append([Track(mongo_track) for mongo_track in coll.find({'keywords': keyword})])
+
+	return matching
+
 def all_artists():
 	"""Return all artists"""
 	return coll.distinct('tag.artist')

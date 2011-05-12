@@ -16,5 +16,12 @@ class List:
 			xml = templates.tracklist
 	)
 	def GET(self):
-		return {'tracks': model.all_tracks()}
+		params = web.input()
+
+		if hasattr(params, 'keywords'):
+			track_list = model.all_tracks_matching(params.keywords.split(' '))
+		else:
+			track_list = model.all_tracks()
+
+		return {'tracks': track_list}
 
