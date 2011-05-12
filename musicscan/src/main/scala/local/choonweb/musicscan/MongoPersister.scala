@@ -9,6 +9,7 @@ class MongoPersister(trackColl : MongoCollection) extends Actor {
   // Create our indexes
   trackColl.ensureIndex(MongoDBObject("path" -> 1), null, true)
   trackColl.ensureIndex(MongoDBObject("tag.artist" -> 1))
+  trackColl.ensureIndex(MongoDBObject("tag.album" -> 1))
   trackColl.ensureIndex(MongoDBObject("tag.title" -> 1))
   trackColl.ensureIndex(MongoDBObject("keywords" -> 1))
 
@@ -42,7 +43,12 @@ class MongoPersister(trackColl : MongoCollection) extends Actor {
           def keywords(tag : org.jaudiotagger.tag.Tag) : Set[String] = {
             def findKeywords(key : FieldKey) : Set[String] = {
               try {
-                return """[\w']+""".r.findAllIn(tag.getFirst(key)).toSet
+                val words = """[\w']+""".r.findAllIn(tag.getFirst(key))
+
+                // Convert to lowercase as Mongo is case sensitive
+                val lowercaseWords = for (word <- words) yield word.toLowerCase
+                // Remove dupes
+                return lowercaseWords.toSet
               }
               catch {
                 case e : NullPointerException =>
