@@ -8,7 +8,5 @@ def default_handler(obj):
 		return obj.__dict__
 	elif isinstance(obj, model.TrackTag):
 		return obj.__dict__
-	elif isinstance(obj, model.TrackFile):
-		return obj.__dict__
 	elif isinstance(obj, bson.objectid.ObjectId):
 		return str(obj)

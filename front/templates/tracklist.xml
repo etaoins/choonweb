@@ -8,12 +8,7 @@ $def with (tracks)
 				<album>$track.tag.album</album>
 				<title>$track.tag.title</title>
 			</tag>
-			<file>
-				<size>$track.file.size</size>
-				<lastModified>$track.file.last_modified.isoformat()</lastModified>
-			</file>
 			<duration>$track.duration</duration>
-			<seen>$track.seen.isoformat()</seen>
 			<path>$track.path</path>
 		</track>
 </tracks>

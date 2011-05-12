@@ -15,18 +15,11 @@ class TrackTag(object):
 		self.album = mongo['album']
 		self.title = mongo['title']
 
-class TrackFile(object):
-	def __init__(self, mongo):
-		self.size = mongo['size']
-		self.last_modified = mongo['lastModified']
-
 class Track(object):
 	def __init__(self, mongo):
 		self.id = mongo['_id']
 		self.duration = mongo['duration']
-		self.seen = mongo['seen']
 		self.tag = TrackTag(mongo['tag'])
-		self.file = TrackFile(mongo['file'])
 		self.path = mongo['path']
 
 def datastore_state_tag():
