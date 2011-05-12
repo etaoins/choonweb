@@ -32,12 +32,11 @@ object MusicScan extends App {
   // Connect to MongoDB
   val mongoConn = MongoConnection(mongoHost)
   val mongoDB = mongoConn("choonweb")
-  val trackColl = mongoDB("tracks")
 
   // Build our actors
-  val persister = new MongoPersister(trackColl).start
+  val persister = new MongoPersister(mongoDB).start
   val extractor = new TagExtractor(persister).start
-  val filter = new MongoUnchangedFilter(trackColl, extractor).start
+  val filter = new MongoUnchangedFilter(mongoDB("tracks"), extractor).start
 
   // Look for audio files
   val audioFilenameRx = "^.*(mp3|m4a|ogg)$(?i)".r

@@ -5,13 +5,20 @@ import org.jaudiotagger.tag._
 import com.mongodb.casbah.Imports._
 import java.util.Date
 
-class MongoPersister(trackColl : MongoCollection) extends Actor {
+class MongoPersister(mongoDB : MongoDB) extends Actor {
+  val trackColl = mongoDB("tracks")
+  val scanColl = mongoDB("scans")
+
   // Create our indexes
   trackColl.ensureIndex(MongoDBObject("path" -> 1), null, true)
   trackColl.ensureIndex(MongoDBObject("tag.artist" -> 1))
   trackColl.ensureIndex(MongoDBObject("tag.album" -> 1))
   trackColl.ensureIndex(MongoDBObject("tag.title" -> 1))
   trackColl.ensureIndex(MongoDBObject("keywords" -> 1))
+  
+  scanColl.ensureIndex(MongoDBObject("finished" -> -1))
+  
+  // Create our scan object
 
   def act() {
     loop {
@@ -86,7 +93,10 @@ class MongoPersister(trackColl : MongoCollection) extends Actor {
             case e : NullPointerException => // Don't save the track
           }
         case TagExtractionDone() =>
-          exit();
+          // Mark our scan as done
+          val scanDoc = MongoDBObject("finished" -> new Date())
+          scanColl.insert(scanDoc)
+          exit()
       }
     }
   }
