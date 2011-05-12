@@ -1,0 +1,15 @@
+$def with (tracks)
+
+<tracks>
+	$for track in tracks:
+		<track id="$track.id">
+			<tag>
+				<artist>$track.tag.artist</artist>
+				<album>$track.tag.album</album>
+				<title>$track.tag.title</title>
+			</tag>
+			<duration>$track.duration</duration>
+			<path>$track.path</path>
+		</track>
+</tracks>
+

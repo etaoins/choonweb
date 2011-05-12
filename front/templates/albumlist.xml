@@ -1,0 +1,9 @@
+$def with (albums)
+
+<albums>
+	$for album in artists:
+		<album>
+			$album
+		</album>
+</albums>
+
