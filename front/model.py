@@ -62,4 +62,4 @@ def artist_tracks(artist):
 
 def artist_exists(artist):
 	"""Determines if an artist exists"""
-	return bool(coll.find_one({'tag.artist': artist}))
+	return bool(coll.find_one({'tag.artist': artist}, fields=[]))
