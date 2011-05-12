@@ -55,3 +55,7 @@ def artist_album_tracks(artist, album):
 def artist_tracks(artist):
 	"""Return all tracks for a given artist"""
 	return [Track(mongo_track) for mongo_track in coll.find({'tag.artist': artist})]
+
+def artist_exists(artist):
+	"""Determines if an artist exists"""
+	return bool(coll.find_one({'tag.artist': artist}))
