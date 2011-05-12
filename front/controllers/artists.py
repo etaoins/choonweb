@@ -27,7 +27,14 @@ class Albums:
 			txt = lambda albums: "\n".join(albums)
 	)
 	def GET(self, artist):
-		return {'albums': model.artist_albums(artist)}
+		albums = model.artist_albums(artist)
+
+		if not albums:
+			# Suspicious
+			if not model.artist_exists(artist):
+				raise web.webapi.NotFound()
+
+		return {'albums': albums}
 
 class Tracks:
 	@mimerender(
@@ -36,7 +43,15 @@ class Tracks:
 			xml = templates.tracklist
 	)
 	def GET(self, artist):
-		return {'tracks': model.artist_tracks(artist)}
+		tracks = model.artist_tracks(artist)
+
+		if not tracks:
+			# This is a bit tricky
+			# Because we only store tracks if no tracks matched the artists then by
+			# definition the artist doesn't exist
+			raise web.webapi.NotFound()
+
+		return {'tracks': tracks}
 
 class AlbumTracks:
 	@mimerender(
@@ -45,6 +60,12 @@ class AlbumTracks:
 			xml = templates.tracklist
 	)
 	def GET(self, artist, album):
-		return {'tracks': model.artist_album_tracks(artist, album)}
+		tracks = model.artist_album_tracks(artist, album)
+
+		if not tracks:
+			# See Tracks.GET for my reasoning here
+			raise web.webapi.NotFound()
+
+		return {'tracks': tracks}
 
 
