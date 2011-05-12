@@ -5,13 +5,21 @@ import org.jaudiotagger.tag._
 import com.mongodb.casbah.Imports._
 import java.util.Date
 
-class MongoPersister(trackColl : MongoCollection) extends Actor {
+class MongoPersister(mongoDB : MongoDB) extends Actor {
+  val trackColl = mongoDB("tracks")
+  val scanColl = mongoDB("scans")
+
   // Create our indexes
   trackColl.ensureIndex(MongoDBObject("path" -> 1), null, true)
   trackColl.ensureIndex(MongoDBObject("tag.artist" -> 1))
   trackColl.ensureIndex(MongoDBObject("tag.album" -> 1))
   trackColl.ensureIndex(MongoDBObject("tag.title" -> 1))
   trackColl.ensureIndex(MongoDBObject("keywords" -> 1))
+  
+  scanColl.ensureIndex(MongoDBObject("finished" -> -1))
+  
+  // Tracks if we've actually done anything
+  var dirty = false
 
   def act() {
     loop {
@@ -81,12 +89,18 @@ class MongoPersister(trackColl : MongoCollection) extends Actor {
             val track = trackBuilder.result
 
             trackColl.update(index, track, upsert = true, multi = false)
+            dirty = true
           }
           catch {
             case e : NullPointerException => // Don't save the track
           }
         case TagExtractionDone() =>
-          exit();
+          if (dirty) {
+            // Record our scan
+            val scanDoc = MongoDBObject("finished" -> new Date())
+            scanColl.insert(scanDoc)
+          }
+          exit()
       }
     }
   }
