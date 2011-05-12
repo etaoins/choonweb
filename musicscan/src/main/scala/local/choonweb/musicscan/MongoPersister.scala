@@ -18,7 +18,8 @@ class MongoPersister(mongoDB : MongoDB) extends Actor {
   
   scanColl.ensureIndex(MongoDBObject("finished" -> -1))
   
-  // Create our scan object
+  // Tracks if we've actually done anything
+  var dirty = false
 
   def act() {
     loop {
@@ -88,14 +89,17 @@ class MongoPersister(mongoDB : MongoDB) extends Actor {
             val track = trackBuilder.result
 
             trackColl.update(index, track, upsert = true, multi = false)
+            dirty = true
           }
           catch {
             case e : NullPointerException => // Don't save the track
           }
         case TagExtractionDone() =>
-          // Mark our scan as done
-          val scanDoc = MongoDBObject("finished" -> new Date())
-          scanColl.insert(scanDoc)
+          if (dirty) {
+            // Record our scan
+            val scanDoc = MongoDBObject("finished" -> new Date())
+            scanColl.insert(scanDoc)
+          }
           exit()
       }
     }
