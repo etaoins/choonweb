@@ -9,6 +9,7 @@ class MongoPersister(trackColl : MongoCollection) extends Actor {
   // Create our indexes
   trackColl.ensureIndex(MongoDBObject("path" -> 1), null, true)
   trackColl.ensureIndex(MongoDBObject("tag.artist" -> 1))
+  trackColl.ensureIndex(MongoDBObject("tag.album" -> 1))
   trackColl.ensureIndex(MongoDBObject("tag.title" -> 1))
   trackColl.ensureIndex(MongoDBObject("keywords" -> 1))
 
