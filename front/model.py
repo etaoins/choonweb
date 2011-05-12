@@ -1,13 +1,13 @@
 import pymongo
 from bson.code import Code
 import uuid
+from web.utils import memoize
 
 # Get our connection, database and collection
 connection = pymongo.Connection()
 db = connection.choonweb
 coll = db.tracks
 
-current_state_tag = uuid.uuid4().hex
 
 class TrackTag(object):
 	def __init__(self, mongo):
@@ -22,9 +22,13 @@ class Track(object):
 		self.tag = TrackTag(mongo['tag'])
 		self.path = mongo['path']
 
-def datastore_state_tag():
+def direct_datastore_state_tag():
 	"""Returns an opaque identifier for the current state of the data store"""
-	return current_state_tag
+	scan_coll = db.scans
+	last_scan = scan_coll.find_one(fields=['_id'], sort=[('finished', pymongo.DESCENDING)])
+	return str(last_scan['_id'])
+
+datastore_state_tag = memoize(direct_datastore_state_tag, expires=300)
 
 def all_tracks():
 	"""Return all tracks"""
