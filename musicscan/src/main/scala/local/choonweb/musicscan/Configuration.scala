@@ -1,14 +1,19 @@
 package local.choonweb.musicscan
 import scala.util.parsing.json.JSON
 import scala.io.Source
+import java.io.InputStream
 
-object Configuration {
+class Configuration(config : Source) {
+  sealed class ConfigParseException extends Exception;
+  final case class UnknownKeyException(key : String) extends ConfigParseException;
+  final class UnexpectedTypeException extends ConfigParseException;
+
   var mongoHost = "localhost"
   var mongoDatabase = "choonweb"
   var musicPrefix = "http://localhost:8080/"
 
   private val jsonStream = getClass().getClassLoader().getResourceAsStream("musicscan.conf")
-  private val jsonText = Source.fromInputStream(jsonStream).mkString
+  private val jsonText = config.mkString
 
   for(fullJson <- JSON.parseFull(jsonText)) fullJson match {
     case rootMap : Map[String, Any] =>
@@ -21,7 +26,10 @@ object Configuration {
               mongoHost = strValue
             case ("database", strValue : String) =>
               mongoDatabase = strValue
+            case _ => throw new UnknownKeyException(mongoPair._1)
           }
+        case _ => throw new UnknownKeyException(pair._1)
       }
+    case _ => throw new UnexpectedTypeException
   }
 }

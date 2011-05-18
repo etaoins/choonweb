@@ -1,6 +1,7 @@
 package local.choonweb.musicscan
 
 import java.io._
+import scala.io.Source
 import java.util.Properties
 import com.mongodb.casbah.Imports._
 
@@ -24,9 +25,13 @@ object MusicScan extends App {
     badUsage
   }
 
+  // Load our configuration
+  val jsonStream = getClass().getClassLoader().getResourceAsStream("musicscan.conf")
+  val config = new Configuration(Source.fromInputStream(jsonStream))
+
   // Connect to MongoDB
-  val mongoConn = MongoConnection(Configuration.mongoHost)
-  val mongoDB = mongoConn(Configuration.mongoDatabase)
+  val mongoConn = MongoConnection(config.mongoHost)
+  val mongoDB = mongoConn(config.mongoDatabase)
 
   // Build our actors
   val persister = new MongoPersister(mongoDB).start
