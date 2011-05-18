@@ -24,14 +24,9 @@ object MusicScan extends App {
     badUsage
   }
 
-  // Load our properties file
-  val props = new Properties();
-  props.load(getClass().getClassLoader().getResourceAsStream("musicscan.properties"))
-  val mongoHost = props.getProperty("mongoHost", "localhost")
-
   // Connect to MongoDB
-  val mongoConn = MongoConnection(mongoHost)
-  val mongoDB = mongoConn("choonweb")
+  val mongoConn = MongoConnection(Configuration.mongoHost)
+  val mongoDB = mongoConn(Configuration.mongoDatabase)
 
   // Build our actors
   val persister = new MongoPersister(mongoDB).start
