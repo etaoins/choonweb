@@ -1,5 +1,6 @@
 import web
 import model
+import settings
 
 urls = (
 		r'/artists/', 'controllers.artists.List',
@@ -13,6 +14,12 @@ def check_modified(handler):
 	web.http.expires(300)
 	web.http.modified(etag=model.datastore_state_tag())
 	return handler()
+
+# Load our settings
+settings.load("choonweb.conf")
+
+# Connect to Mongo
+model.connect()
 
 app = web.application(urls, globals())
 

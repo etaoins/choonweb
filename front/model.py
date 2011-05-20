@@ -2,12 +2,15 @@ import pymongo
 from bson.code import Code
 import uuid
 from web.utils import memoize
+import settings
 
 # Get our connection, database and collection
-connection = pymongo.Connection()
-db = connection.choonweb
-coll = db.tracks
+def connect():
+	global connection, db, coll
 
+	connection = pymongo.Connection(settings.MONGO_HOST)
+	db = connection[settings.MONGO_DATABASE]
+	coll = db.tracks
 
 class TrackTag(object):
 	def __init__(self, mongo):
