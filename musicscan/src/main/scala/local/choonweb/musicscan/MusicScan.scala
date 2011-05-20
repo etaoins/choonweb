@@ -26,7 +26,7 @@ object MusicScan extends App {
   }
 
   // Load our configuration
-  val jsonStream = getClass().getClassLoader().getResourceAsStream("musicscan.conf")
+  val jsonStream = getClass().getClassLoader().getResourceAsStream("choonweb.conf")
   val config = new Configuration(Source.fromInputStream(jsonStream))
 
   // Connect to MongoDB

@@ -12,10 +12,7 @@ class Configuration(config : Source) {
   var mongoDatabase = "choonweb"
   var musicPrefix = "http://localhost:8080/"
 
-  private val jsonStream = getClass().getClassLoader().getResourceAsStream("musicscan.conf")
-  private val jsonText = config.mkString
-
-  for(fullJson <- JSON.parseFull(jsonText)) fullJson match {
+  for(fullJson <- JSON.parseFull(config.mkString)) fullJson match {
     case rootMap : Map[String, Any] =>
       for(pair <- rootMap) pair match {
         case ("musicPrefix", strValue : String) =>
